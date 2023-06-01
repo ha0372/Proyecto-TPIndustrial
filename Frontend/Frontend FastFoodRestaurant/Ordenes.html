@@ -1,0 +1,37 @@
+<h1>Ordenes</h1>
+<head>
+    <!-- Include SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<style>
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 18px;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <button class="btn" onclick="showAlert(1)">Button 1</button>
+    <button class="btn" onclick="showAlert(2)">Button 2</button>
+    <button class="btn" onclick="showAlert(3)">Button 3</button>
+    <button class="btn" onclick="showAlert(4)">Button 4</button>
+
+    <script>
+        function showAlert(number) {
+            Swal.fire(
+              'Has seleccionado el Botón ' + number,
+              'Este es un ejemplo de modal SweetAlert2',
+              'success'
+            )
+        }
+    </script>
+</body>
+
