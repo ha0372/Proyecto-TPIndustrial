@@ -68,6 +68,7 @@ create table states(
 -- Create Employees table
 CREATE TABLE employees (
     id INT not null PRIMARY KEY AUTO_INCREMENT,
+    state_id int not null,
     name VARCHAR(100) NOT NULL,
     lastname VARCHAR(100) NOT NULL,
     address VARCHAR(200) not null,
@@ -80,14 +81,16 @@ CREATE TABLE employees (
     nationality VARCHAR(50) not null,
     salary DECIMAL(10,2),
     date_creation datetime  NOT NULL,
+    image_employee varchar(255),
+    FOREIGN KEY (state_id) REFERENCES states(id),
     UNIQUE(identification_number,email,phone_number)
 );
 
 create table employee_users(
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     employee_id int not null,
-    users_id int not null;
-    FOREIGN KEY (employees) REFERENCES employees(id),
+    users_id int not null,
+    FOREIGN KEY (employee_id) REFERENCES employees(id),
     FOREIGN KEY (users_id) REFERENCES users(id)
 );
 
@@ -132,7 +135,7 @@ CREATE TABLE schedule (
 );
 
 -- Create table Vacaciones
-CREATE TABLE vacaciones (
+CREATE TABLE vacations (
     id INT not null PRIMARY KEY AUTO_INCREMENT,
     employee_positions_id INT not null,
     start_date DATE not null,
@@ -141,7 +144,7 @@ CREATE TABLE vacaciones (
 );
 
 -- Create table Permisos
-CREATE TABLE permisos (
+CREATE TABLE permits (
     id INT not null PRIMARY KEY AUTO_INCREMENT,
     employee_positions_id INT not null,
     start_date DATE not null,
@@ -154,16 +157,13 @@ CREATE TABLE permisos (
 CREATE TABLE work_attendance (
     id INT not null PRIMARY KEY AUTO_INCREMENT,
     employee_positions_id INT not null,
-    "date" DATE not null,
+    date_attendance DATE not null,
     arrival_time TIME not null,
     departure_time TIME not null,
     FOREIGN KEY (employee_positions_id) REFERENCES employee_positions(id)
 );
 
-
-
-
-/* -----------------------------Inventario Y Productos-------------------------------*/
+/* -----------------------------Inventario Y Materiales-------------------------------*/
 -- TABLA DE SUCURSAL
 CREATE TABLE branches (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -175,8 +175,8 @@ CREATE TABLE branches (
     UNIQUE (name,address,phone)
 );
 
--- TABLA DE PRODUCTOS
-CREATE TABLE products (
+-- TABLA DE MATERIALES
+CREATE TABLE materials (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     state_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -192,35 +192,90 @@ CREATE TABLE products (
 );
 
 -- TABLA DE INVENTARIO
-CREATE TABLE inventory_products (
+CREATE TABLE inventory_materials (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     state_id int not null,
     branch_id INT NOT NULL,
-    product_id INT NOT NULL,
+    material_id INT NOT NULL,
     quantity INT NOT NULL,
     entry_date datetime not null,
     expiration_date date not null,
     FOREIGN KEY (state_id) REFERENCES states(id),
     FOREIGN KEY (branch_id) REFERENCES branches(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (material_id) REFERENCES materials(id)
 );
 
 -- historial de inventario
-CREATE TABLE inventory_product_histories (
+CREATE TABLE inventory_material_histories (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    product_id INT not null,
-    "date" DATETIME  not null,
+    material_id INT not null,
+    date_historie DATETIME  not null,
     quantity INT not null,
     previous_quantity INT not null,
     new_quantity INT not null,
     reason VARCHAR(255),
     sucess varchar(50) not null,
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (material_id) REFERENCES materials(id)
 );
 
 
 /* -------------------Categorias y Menu  combos ----------------*/
 
+-- Create table categories
+CREATE TABLE categories (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   state_id int not null,
+	name varchar(50) NOT NULL,
+	description varchar(512) NOT NULL,
+	image_categori varchar(255),
+	FOREIGN KEY (state_id) REFERENCES states(id)
+);
+
+-- Create table products
+CREATE TABLE products (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   state_id int not null,
+   category_id INT NOT NULL,
+   name VARCHAR(100) not null,
+   description VARCHAR(255) not null,
+   price DECIMAL(10, 2) not null,
+   image_product varchar(255),
+   FOREIGN KEY (state_id) REFERENCES states(id),
+   FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+-- Create table combos
+CREATE TABLE combos (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    state_id int not null,
+	name varchar(50) NOT NULL,
+	description varchar(512) NOT NULL,
+	price DECIMAL(10, 2) not null,
+	image_combo varchar(255) not null,
+	FOREIGN KEY (state_id) REFERENCES states(id)
+);
+
+-- Create table combo_details
+CREATE TABLE combo_details (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   combo_id INT not null,
+   product_id INT not null,
+   quantity int not null,
+   FOREIGN KEY (combo_id) REFERENCES combos(id),
+   FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- Create table recipe_details
+CREATE TABLE recipe_details (
+   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   state_id int not null,
+   product_id int not null,
+   materials_id INT not null,
+   quantity INT not null,
+   FOREIGN KEY (state_id) REFERENCES states(id),
+   FOREIGN KEY (product_id) REFERENCES products(id),
+   FOREIGN KEY (materials_id) REFERENCES materials(id)
+);
 
 /*-------------------- Proveedor y Compras------------------------------------------*/
 -- TABLA DE PROVEEDORES
@@ -253,12 +308,12 @@ CREATE TABLE purchase_orders (
 CREATE TABLE purchase_order_details (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     purchase_id INT not null,
-    product_id INT not null,
+    material_id INT not null,
     quantity INT not null,
     unit_price DECIMAL(10, 2) not null,
     sub_total DECIMAL(10, 2) not null,
-    FOREIGN KEY (purchase_id) REFERENCES purchase_orders(purchase_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id)
+    FOREIGN KEY (purchase_id) REFERENCES purchase_orders(id),
+    FOREIGN KEY (material_id) REFERENCES materials(id)
 );
 
 -- Tabla de Historial de ordenes
@@ -277,7 +332,7 @@ create table customers(
 create table customer_users(
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     customer_id int not null,
-    users_id int not null;
+    users_id int not null,
     FOREIGN KEY (customer_id) REFERENCES customers(id),
     FOREIGN KEY (users_id) REFERENCES users(id)
 );
@@ -297,12 +352,12 @@ CREATE TABLE transactions (
 CREATE TABLE transaction_details (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     transaction_id INT not null,
-    menu_id INT not null,
+    product_id INT not null,
     quantity INT not null,
     unit_price DECIMAL(10, 2) not null,
     subtotal DECIMAL(10, 2) not null,
     FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-    FOREIGN KEY (menu_id) REFERENCES menu(id)
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 CREATE TABLE order_types(
@@ -359,7 +414,7 @@ CREATE TABLE sales (
     FOREIGN KEY (transaction_id) REFERENCES transactions(id),
     FOREIGN KEY (employee_id) REFERENCES employees(id),
     FOREIGN KEY (state_id) REFERENCES states(id),
-    UNIQUE(order_code)
+    UNIQUE(sale_code)
 );
 
 
@@ -381,10 +436,6 @@ create  table payments(
     FOREIGN KEY (payment_type_id) REFERENCES payment_type(id),
     FOREIGN KEY (state_id) REFERENCES states(id)
 );
-
-
-
-
 
 
 
