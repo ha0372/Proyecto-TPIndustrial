@@ -22,7 +22,6 @@ toggle.onclick = function () {
    
 
 
-
 function loadPage(page) {
   const contentDiv = document.getElementById('content');
   fetch(`/${page}.html`)
